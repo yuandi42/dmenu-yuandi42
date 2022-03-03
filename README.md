@@ -1,11 +1,8 @@
 ##Patches added / plan to add
-[center](https://tools.suckless.org/dmenu/patches/center/)  □
-
-[fuzzymatch](https://tools.suckless.org/dmenu/patches/fuzzymatch/) □
-
-[border](https://tools.suckless.org/dmenu/patches/border/) □
-
-[mouse support](https://tools.suckless.org/dmenu/patches/mouse-support/) □
-
-[xresources](https://tools.suckless.org/dmenu/patches/xresources-alt/) □
-
+Patch | Status |
+---|---|
+[center](https://tools.suckless.org/dmenu/patches/center/)  | Patched |
+[fuzzymatch](https://tools.suckless.org/dmenu/patches/fuzzymatch/) | Patched |
+[border](https://tools.suckless.org/dmenu/patches/border/) | Unpatched |
+[mouse support](https://tools.suckless.org/dmenu/patches/mouse-support/) | Unpatched |
+[xresources](https://tools.suckless.org/dmenu/patches/xresources-alt/) | Unpatched |
