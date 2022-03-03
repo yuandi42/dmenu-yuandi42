@@ -1,3 +1,4 @@
+##Patches added / plan to add
 [center](https://tools.suckless.org/dmenu/patches/center/)  □
 
 [fuzzymatch](https://tools.suckless.org/dmenu/patches/fuzzymatch/) □
@@ -7,3 +8,4 @@
 [mouse support](https://tools.suckless.org/dmenu/patches/mouse-support/) □
 
 [xresources](https://tools.suckless.org/dmenu/patches/xresources-alt/) □
+
