@@ -1,6 +1,6 @@
 # README
 ## Screenshot
-![Screenshot]{dmenu.png "Screenshot"}
+![Screenshot](dmenu.png 'Screenshot')
 ## Dependency
 1. [git](https://archlinux.org/packages/extra/x86_64/git/)
 2. [make](https://archlinux.org/packages/core/x86_64/make/)
