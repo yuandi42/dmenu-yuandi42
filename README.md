@@ -1,8 +1,16 @@
 # README
 ## Screenshot
-WIP
+![Screenshot]{dmenu.png "Screenshot"}
 ## Dependency
-WIP
+1. [git](https://archlinux.org/packages/extra/x86_64/git/)
+2. [make](https://archlinux.org/packages/core/x86_64/make/)
+3. [libx11](https://archlinux.org/packages/extra/x86_64/libx11/)
+4. [libxinerama](https://archlinux.org/packages/extra/x86_64/libxinerama/)
+5. [libxft-bgra](https://aur.archlinux.org/packages/libxft-bgra)
+## Options added
+    -bw " num": dmenu appers with certain width of border.
+    -F: dmenu turns off fuzzy match.
+    -c: dmenu appears centered on the screen.
 ## Patches added / plan to add
 Patch | Status |
 ---|---|
