@@ -50,7 +50,7 @@ awk -v histfile=$historyfile '
 	' \
 	| while read cmd; do 
         case $cmd in
-            *\; ) ${termcmd} "$(printf "%s" "${cmd}" | cut -d';' -f1)";;
-            * ) ${cmd} ;;
+            *\; ) setsid -f ${termcmd} "$(printf "%s" "${cmd}" | cut -d';' -f1)";;
+            * )   setsid -f ${cmd} ;;
         esac
       done
