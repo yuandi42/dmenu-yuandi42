@@ -15,7 +15,7 @@ if stest -dqr -n "$cache" $PATH; then
 fi
 unset IFS
 
-termcmd="alacritty -e"
+termcmd="$TERMINAL -e"
 awk -v histfile=$historyfile '
 	BEGIN {
 		while( (getline < histfile) > 0 ) {
