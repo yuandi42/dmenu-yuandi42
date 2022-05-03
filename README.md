@@ -40,6 +40,7 @@ Patch | Status |
 ---|---|
 [center](https://tools.suckless.org/dmenu/patches/center/)  | Patched |
 [fuzzymatch](https://tools.suckless.org/dmenu/patches/fuzzymatch/) | Patched|
+[fuzzyhighlight](https://tools.suckless.org/dmenu/patches/fuzzyhighlight/) | Patched|
 [border](https://tools.suckless.org/dmenu/patches/border/) | Patched |
 [mouse support](https://tools.suckless.org/dmenu/patches/mouse-support/) | Patched[^1] |
 [gruvbox](https://tools.suckless.org/dmenu/patches/gruvbox/) | Patched |
