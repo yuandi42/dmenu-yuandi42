@@ -18,6 +18,11 @@ For arch users, you need packages below (the last one is in AUR):
 4. [libxinerama](https://archlinux.org/packages/extra/x86_64/libxinerama/)
 5. [libxft-bgra](https://aur.archlinux.org/packages/libxft-bgra)
 ## What's new?
+### Multilanguage support
+This fork enhances its usability for showing various kinds unicode characters.
+Now my `dmenu` can correctly show letters from CKJ to even Hebrew rather
+showing anonymous square.
+
 ### `dmenu_run`
 This new script can handle history in `$XDG_CACHE_HOME` and will list command
 you type most on the top when you run `dmenu_run`.
@@ -45,8 +50,12 @@ Patch | Status |
 [mouse support](https://tools.suckless.org/dmenu/patches/mouse-support/) | Patched[^1] |
 [gruvbox](https://tools.suckless.org/dmenu/patches/gruvbox/) | Patched |
 [Allow color font](https://tools.suckless.org/dmenu/patches/allow-color-font/) | Patched[^2] |
+[Unicode](https://github.com/akash-akya/dmenu-unicode)| Patched [^3]|
 
 [^1]:Left-click on item doesn't work on my archlinux but works well on
   arco. Dependency problem maybe.
 
 [^2]:A patch of libxft is needed.
+
+[^3]:Not a patch in [suckless site](https://tools.suckless.org/dmenu/patches/)
+  actually. It's a dmenu fork and I just stolen codes from its git commit.
