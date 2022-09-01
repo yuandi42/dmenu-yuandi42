@@ -1,9 +1,15 @@
 /* See LICENSE file for copyright and license details. */
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+
+#include <pango/pango.h>
+#include <pango/pangoxft.h>
+#include <pango/pangofc-fontmap.h>
 
 #include "drw.h"
 #include "util.h"
@@ -15,50 +21,6 @@ static const unsigned char utfbyte[UTF_SIZ + 1] = {0x80,    0, 0xC0, 0xE0, 0xF0}
 static const unsigned char utfmask[UTF_SIZ + 1] = {0xC0, 0x80, 0xE0, 0xF0, 0xF8};
 static const long utfmin[UTF_SIZ + 1] = {       0,    0,  0x80,  0x800,  0x10000};
 static const long utfmax[UTF_SIZ + 1] = {0x10FFFF, 0x7F, 0x7FF, 0xFFFF, 0x10FFFF};
-
-static long
-utf8decodebyte(const char c, size_t *i)
-{
-	for (*i = 0; *i < (UTF_SIZ + 1); ++(*i))
-		if (((unsigned char)c & utfmask[*i]) == utfbyte[*i])
-			return (unsigned char)c & ~utfmask[*i];
-	return 0;
-}
-
-static size_t
-utf8validate(long *u, size_t i)
-{
-	if (!BETWEEN(*u, utfmin[i], utfmax[i]) || BETWEEN(*u, 0xD800, 0xDFFF))
-		*u = UTF_INVALID;
-	for (i = 1; *u > utfmax[i]; ++i)
-		;
-	return i;
-}
-
-static size_t
-utf8decode(const char *c, long *u, size_t clen)
-{
-	size_t i, j, len, type;
-	long udecoded;
-
-	*u = UTF_INVALID;
-	if (!clen)
-		return 0;
-	udecoded = utf8decodebyte(c[0], &len);
-	if (!BETWEEN(len, 1, UTF_SIZ))
-		return 1;
-	for (i = 1, j = 1; i < clen && j < len; ++i, ++j) {
-		udecoded = (udecoded << 6) | utf8decodebyte(c[i], &type);
-		if (type)
-			return j;
-	}
-	if (j < len)
-		return 0;
-	*u = udecoded;
-	utf8validate(u, len);
-
-	return len;
-}
 
 Drw *
 drw_create(Display *dpy, int screen, Window root, unsigned int w, unsigned int h)
@@ -238,20 +200,13 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 int
 drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert)
 {
-	char buf[1024];
 	int ty;
 	unsigned int ew;
 	XftDraw *d = NULL;
-	Fnt *usedfont, *curfont, *nextfont;
-	size_t i, len;
-	int utf8strlen, utf8charlen, render = x || y || w || h;
-	long utf8codepoint = 0;
-	const char *utf8str;
-	FcCharSet *fccharset;
-	FcPattern *fcpattern;
-	FcPattern *match;
-	XftResult result;
-	int charexists = 0;
+	Fnt *usedfont;
+    PangoContext *pgo_context;
+    PangoFontMap *pgo_fontmap;
+	int utf8strlen, render = x || y || w || h;
 
 	if (!drw || (render && !drw->scheme) || !text || !drw->fonts)
 		return 0;
@@ -269,96 +224,24 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
 	}
 
 	usedfont = drw->fonts;
-	while (1) {
-		utf8strlen = 0;
-		utf8str = text;
-		nextfont = NULL;
-		while (*text) {
-			utf8charlen = utf8decode(text, &utf8codepoint, UTF_SIZ);
-			for (curfont = drw->fonts; curfont; curfont = curfont->next) {
-				charexists = charexists || XftCharExists(drw->dpy, curfont->xfont, utf8codepoint);
-				if (charexists) {
-					if (curfont == usedfont) {
-						utf8strlen += utf8charlen;
-						text += utf8charlen;
-					} else {
-						nextfont = curfont;
-					}
-					break;
-				}
-			}
+    utf8strlen = strlen(text);
 
-			if (!charexists || nextfont)
-				break;
-			else
-				charexists = 0;
-		}
+    if (utf8strlen) {
+        pgo_fontmap = pango_xft_get_font_map (drw->dpy, drw->screen);
+        pgo_context = pango_font_map_create_context (pgo_fontmap);
+        
+        pango_get_extents(pgo_context, usedfont->xfont, text, &ew);
 
-		if (utf8strlen) {
-			drw_font_getexts(usedfont, utf8str, utf8strlen, &ew, NULL);
-			/* shorten text if necessary */
-			for (len = MIN(utf8strlen, sizeof(buf) - 1); len && ew > w; len--)
-				drw_font_getexts(usedfont, utf8str, len, &ew, NULL);
+        if (render) {
+            ty = y + (h - usedfont->h) / 2 + usedfont->xfont->ascent;
+            x_blit(pgo_context, pgo_fontmap, &drw->scheme[invert ? ColBg : ColFg], usedfont->xfont, d, text, x, ty);
+                    
+        }
+        x += ew;
+        w -= ew;
+        if (pgo_context) g_object_unref(pgo_context);
+    }
 
-			if (len) {
-				memcpy(buf, utf8str, len);
-				buf[len] = '\0';
-				if (len < utf8strlen)
-					for (i = len; i && i > len - 3; buf[--i] = '.')
-						; /* NOP */
-
-				if (render) {
-					ty = y + (h - usedfont->h) / 2 + usedfont->xfont->ascent;
-					XftDrawStringUtf8(d, &drw->scheme[invert ? ColBg : ColFg],
-					                  usedfont->xfont, x, ty, (XftChar8 *)buf, len);
-				}
-				x += ew;
-				w -= ew;
-			}
-		}
-
-		if (!*text) {
-			break;
-		} else if (nextfont) {
-			charexists = 0;
-			usedfont = nextfont;
-		} else {
-			/* Regardless of whether or not a fallback font is found, the
-			 * character must be drawn. */
-			charexists = 1;
-
-			fccharset = FcCharSetCreate();
-			FcCharSetAddChar(fccharset, utf8codepoint);
-
-			if (!drw->fonts->pattern) {
-				/* Refer to the comment in xfont_create for more information. */
-				die("the first font in the cache must be loaded from a font string.");
-			}
-
-			fcpattern = FcPatternDuplicate(drw->fonts->pattern);
-			FcPatternAddCharSet(fcpattern, FC_CHARSET, fccharset);
-			FcPatternAddBool(fcpattern, FC_SCALABLE, FcTrue);
-
-			FcConfigSubstitute(NULL, fcpattern, FcMatchPattern);
-			FcDefaultSubstitute(fcpattern);
-			match = XftFontMatch(drw->dpy, drw->screen, fcpattern, &result);
-
-			FcCharSetDestroy(fccharset);
-			FcPatternDestroy(fcpattern);
-
-			if (match) {
-				usedfont = xfont_create(drw, NULL, match);
-				if (usedfont && XftCharExists(drw->dpy, usedfont->xfont, utf8codepoint)) {
-					for (curfont = drw->fonts; curfont->next; curfont = curfont->next)
-						; /* NOP */
-					curfont->next = usedfont;
-				} else {
-					xfont_free(usedfont);
-					usedfont = drw->fonts;
-				}
-			}
-		}
-	}
 	if (d)
 		XftDrawDestroy(d);
 
@@ -392,10 +275,114 @@ drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned int *w,
 		return;
 
 	XftTextExtentsUtf8(font->dpy, font->xfont, (XftChar8 *)text, len, &ext);
+    
 	if (w)
 		*w = ext.xOff;
 	if (h)
 		*h = font->h;
+}
+
+void
+get_text_width (PangoLayout *layout, unsigned int *width)
+{
+    pango_layout_get_size (layout, (int *)width, NULL);
+    /* Divide by pango scale to get dimensions in pixels. */
+    *width /= PANGO_SCALE;
+}
+
+void
+pango_get_extents(PangoContext *pgo_context, XftFont *xfont, const char *TextStr, unsigned int *width)
+{
+    PangoFontDescription *fontdes;
+    PangoLayout          *layout;
+ 
+    if ((fontdes = pango_fc_font_description_from_pattern (xfont->pattern, TRUE)) == 0)
+        {
+            fprintf(stderr, "Failed to load font, exiting.");
+            exit(-1);
+        }
+
+    pango_context_set_font_description(pgo_context, fontdes);
+
+    layout = pango_layout_new (pgo_context);
+    pango_layout_set_text (layout, TextStr, -1);
+    pango_layout_set_font_description (layout, fontdes);
+    
+    /* Get text dimensions and create a context to render to */
+    get_text_width (layout, width);
+    g_object_unref (layout);
+}
+
+void
+x_blit(PangoContext *pgo_context, PangoFontMap *pgo_fontmap, XftColor *xftcol, XftFont *xfont, XftDraw *xftdraw, const char *TextStr, int x, int y)
+{
+    PangoFontDescription *fontdes;
+    PangoFont            *font;
+
+    if ((fontdes = pango_fc_font_description_from_pattern (xfont->pattern, TRUE)) == 0)
+        {
+            fprintf(stderr, "Failed to load font, exiting.");
+            exit(-1);
+        }
+
+    pango_context_set_font_description(pgo_context, fontdes);
+
+    if ((font = pango_font_map_load_font (pgo_fontmap,
+                                          pgo_context, fontdes)) == NULL)
+        {
+            fprintf(stderr, "Failed to load font, exiting.");
+            exit(-1);
+        }
+
+    char *str = NULL;
+    GList *items_head = NULL, *items = NULL;
+    PangoAttrList *attr_list = NULL;
+
+
+    attr_list = pango_attr_list_new (); /* no markup - empty attributes */
+    str       = strdup(TextStr);
+
+    /* analyse string, breaking up into items */
+    items_head = items = pango_itemize (pgo_context, str, 
+                                        0, strlen(TextStr),
+                                        attr_list, NULL);
+
+    while (items)
+        {
+            PangoItem        *this   = (PangoItem *)items->data;
+            PangoGlyphString *glyphs = pango_glyph_string_new ();
+            PangoRectangle    rect;
+       
+            /* shape current item into run of glyphs */
+            pango_shape  (&str[this->offset], this->length, 
+                          &this->analysis, glyphs);
+
+            
+            /* render the glyphs */
+            pango_xft_render (xftdraw, 
+                              xftcol,
+                              this->analysis.font,
+                              glyphs,
+                              x, y);
+
+            /* calculate rendered area */
+            pango_glyph_string_extents (glyphs,
+                                        this->analysis.font,
+                                        &rect,
+                                        NULL);
+
+            x += ( rect.x + rect.width ) / PANGO_SCALE;
+       
+            pango_item_free (this);
+            pango_glyph_string_free (glyphs);
+
+            items = items->next;
+        }
+
+    
+    if (attr_list)  pango_attr_list_unref (attr_list);
+    if (str)        free(str); 
+    if (items_head) g_list_free (items_head);
 }
 
 Cur *
