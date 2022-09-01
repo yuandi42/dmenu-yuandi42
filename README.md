@@ -45,6 +45,7 @@ Patch | Status |
 [mouse support](https://tools.suckless.org/dmenu/patches/mouse-support/) | Patched[^1] |
 [gruvbox](https://tools.suckless.org/dmenu/patches/gruvbox/) | Patched |
 [Allow color font](https://tools.suckless.org/dmenu/patches/allow-color-font/) | Patched[^2] |
+
 [^1]:Left-click on item doesn't work on my archlinux but works well on
   arco. Dependency problem maybe.
 [^2]:A patch of libxft is needed.
