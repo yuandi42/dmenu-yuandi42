@@ -11,12 +11,17 @@ does not block color emoji, you need to add a
 [patch](https://aur.archlinux.org/packages/libxft-bgra/) to `libxft` before the
 patch is merged into upstream.
 
+And since this fork add extra unicode support, you also need Pango and Pangoxft
+addtionally.
+
 For arch users, you need packages below (the last one is in AUR):
 1. [git](https://archlinux.org/packages/extra/x86_64/git/)
 2. [make](https://archlinux.org/packages/core/x86_64/make/)
 3. [libx11](https://archlinux.org/packages/extra/x86_64/libx11/)
 4. [libxinerama](https://archlinux.org/packages/extra/x86_64/libxinerama/)
 5. [libxft-bgra](https://aur.archlinux.org/packages/libxft-bgra)
+6. [pango](https://archlinux.org/packages/extra/x86_64/pango/)
+
 ## What's new?
 ### Multilanguage support
 This fork enhances its usability for showing various kinds unicode characters.
