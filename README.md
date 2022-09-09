@@ -6,10 +6,7 @@ patches from upstream repo.
 ## Screenshot
 ![Screenshot](screenshot.png 'Screenshot')
 ## Dependency
-In order to build dmenu you need the Xlib header files. Since my build of dmenu
-does not block color emoji, you need to add a
-[patch](https://aur.archlinux.org/packages/libxft-bgra/) to `libxft` before the
-patch is merged into upstream.
+In order to build dmenu you need the Xlib header files.
 
 And since this fork add extra unicode support, you also need Pango and Pangoxft
 addtionally.
@@ -19,7 +16,7 @@ For arch users, you need packages below (the last one is in AUR):
 2. [make](https://archlinux.org/packages/core/x86_64/make/)
 3. [libx11](https://archlinux.org/packages/extra/x86_64/libx11/)
 4. [libxinerama](https://archlinux.org/packages/extra/x86_64/libxinerama/)
-5. [libxft-bgra](https://aur.archlinux.org/packages/libxft-bgra)
+5. [libxft](https://archlinux.org/packages/extra/x86_64/libxft/)
 6. [pango](https://archlinux.org/packages/extra/x86_64/pango/)
 
 ## What's new?
