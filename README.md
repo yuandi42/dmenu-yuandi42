@@ -11,7 +11,7 @@ In order to build dmenu you need the Xlib header files.
 And since this fork add extra unicode support, you also need Pango and Pangoxft
 addtionally.
 
-For arch users, you need packages below (the last one is in AUR):
+For arch users, you need packages below:
 1. [git](https://archlinux.org/packages/extra/x86_64/git/)
 2. [make](https://archlinux.org/packages/core/x86_64/make/)
 3. [libx11](https://archlinux.org/packages/extra/x86_64/libx11/)
@@ -26,18 +26,12 @@ Now my `dmenu` can correctly show letters from CKJ to even Hebrew rather
 showing anonymous square.
 
 ### `dmenu_run`
-This new script can handle history in `$XDG_CACHE_HOME` and will list command
-you type most on the top when you run `dmenu_run`.
-
-And when your command end with `;`, the command will be started in a terminal.
+When your command end with `;`, the command will be started in a terminal.
 (Actually, in `$TERMINAL`. And you set the value in `.bash_profile` or
 `.xporfile` or any other place.)
 
-Besides, the command you type will be run in a new session with `setsid -f`.
+I have removed history function from `dmenu_run` to `dmenu_run_history`.
 
-P.S. I just simply combined those
-[two](https://tools.suckless.org/dmenu/scripts/dmenu_run_with_command_history)
-[scripts](https://tools.suckless.org/dmenu/scripts/dmenu_run_i) together.
 ### Flags added
 * `-bw` *num*: dmenu appers with certain width of border.
 * `-F`: dmenu turns off fuzzy match.
